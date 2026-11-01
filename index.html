@@ -138,6 +138,7 @@ footer { text-align:center; color:#87948c; font-size:11px; margin-top:22px; }
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  (function(){
 const SUPABASE_URL='https://chjskcvalgntdlfyhprj.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoanNrY3ZhbGdudGRsZnlocHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MzY4NjksImV4cCI6MjEwOTExMjg2OX0.r2zIAYrc5ZgfPyWFDaf81tgmG6SAgam4Brta1evLoR0';
 const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -279,9 +280,9 @@ supabase.auth.getSession().then(async({data})=>{
  if(data.session){
   currentUser=data.session.user;
   await loadCloudData();
-  updateAuthButtons()
- }
-});
+  updateAuthButtons()}
+ });
+ })();
 </script>
 </body>
 </html>
