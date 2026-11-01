@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -99,13 +99,38 @@ footer { text-align:center; color:#87948c; font-size:11px; margin-top:22px; }
   <div class="grid">
    <section class="panel">
     <div class="panel-head"><div><h3>Today's habits</h3><div class="muted">Your daily check-in</div></div><span class="muted" id="dateShort"></span></div>
-    <div class="habits" id="habits">
-     <label class="habit"><span class="habit-icon">🇬🇧</span><span class="habit-info"><strong>English</strong><span>30 minutes · Daily</span></span><input class="check" type="checkbox" data-id="english"></label>
-     <label class="habit"><span class="habit-icon">📈</span><span class="habit-info"><strong>Trading study</strong><span>45 minutes · Daily</span></span><input class="check" type="checkbox" data-id="trading"></label>
-     <label class="habit"><span class="habit-icon">🏃</span><span class="habit-info"><strong>Running</strong><span>3 times per week</span></span><input class="check" type="checkbox" data-id="running"></label>
-     <label class="habit"><span class="habit-icon">💪</span><span class="habit-info"><strong>Pompes</strong><span>2 times per week</span></span><input class="check" type="checkbox" data-id="pompes"></label>
+    <div 
+<div class="habits" id="habits"></div>
+
+<button class="primary" id="addGoalBtn" type="button">
+  + Add New Goal
+</button>
+
+<div id="goalModal" class="modal-backdrop">
+  <section class="auth-card">
+    <h2 id="goalModalTitle">Create a goal</h2>
+
+    <label for="goalTitle">Goal name</label>
+    <input id="goalTitle" type="text" placeholder="Example: E-commerce">
+
+    <label for="goalIcon">Choose an emoji</label>
+    <input id="goalIcon" type="text" value="🎯" maxlength="4">
+
+    <label for="goalSchedule">Frequency</label>
+    <select id="goalSchedule">
+      <option value="Daily">Daily</option>
+      <option value="3 times per week">3 times per week</option>
+      <option value="2 times per week">2 times per week</option>
+      <option value="Weekly">Weekly</option>
+    </select>
+
+    <div class="actions">
+      <button class="primary" id="saveGoalBtn" type="button">Save Goal</button>
+      <button class="secondary" id="cancelGoalBtn" type="button">Cancel</button>
     </div>
-    <div class="toast" id="toast" aria-live="polite"></div>
+  </section>
+</div>
+<div class="toast" id="toast" aria-live="polite"></div>
     <div class="panel-head" style="margin-top:24px;margin-bottom:8px"><h3>Weekly overview</h3><span class="muted">This week</span></div>
     <div class="week" id="week"></div>
    </section>
@@ -150,7 +175,9 @@ let store={};
 try{store=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){store={}}
 let currentUser=null;
 const dayData=()=>store[todayKey]||(store[todayKey]={checks:{},note:''});
-const checks=[...document.querySelectorAll('.check')];
+const habitsEl = document.getElementById('habits');
+let goals = [];
+let editingGoalId = null;
 const toast=document.getElementById('toast');
 
 document.getElementById('todayLabel').textContent=today.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
@@ -167,26 +194,154 @@ async function cloudSave(date=todayKey){
  return true;
 }
 
+
 function render(){
- const d=dayData();let n=0;
- checks.forEach(c=>{c.checked=!!d.checks[c.dataset.id];if(c.checked)n++});
- const pct=Math.round(n/checks.length*100);
+ const d=dayData();
+ let n=0;
+
+ habitsEl.innerHTML='';
+
+ goals.forEach(goal=>{
+  const checked=!!d.checks[goal.id];
+  if(checked)n++;
+
+  const label=document.createElement('div');
+  label.className='habit';
+
+  const icon=document.createElement('span');
+  icon.className='habit-icon';
+  icon.textContent=goal.icon||'🎯';
+
+  const info=document.createElement('span');
+  info.className='habit-info';
+
+  const title=document.createElement('strong');
+  title.textContent=goal.title;
+
+  const schedule=document.createElement('span');
+  schedule.textContent=goal.schedule;
+
+  info.append(title,schedule);
+
+  const checkbox=document.createElement('input');
+  checkbox.className='check';
+  checkbox.type='checkbox';
+  checkbox.dataset.id=goal.id;
+  checkbox.checked=checked;
+
+  const editBtn=document.createElement('button');
+editBtn.type='button';
+editBtn.textContent='✏️';
+editBtn.dataset.action='edit';
+editBtn.dataset.id=goal.id;
+
+const deleteBtn=document.createElement('button');
+deleteBtn.type='button';
+deleteBtn.textContent='🗑️';
+deleteBtn.dataset.action='delete';
+deleteBtn.dataset.id=goal.id;
+
+label.append(icon,info,checkbox,editBtn,deleteBtn);
+  habitsEl.appendChild(label);
+ });
+
+ const pct=goals.length
+  ?Math.round(n/goals.length*100)
+  :0;
+
  document.getElementById('percent').textContent=pct+'%';
- document.getElementById('completedText').textContent=n+' of '+checks.length;
+ document.getElementById('completedText').textContent=n+' of '+goals.length;
  document.getElementById('ring').style.setProperty('--progress',pct+'%');
  document.getElementById('totalDone').textContent=n;
- document.getElementById('totalDays').textContent=Object.values(store).filter(x=>x&&Object.values(x.checks||{}).some(Boolean)).length;
- const week=document.getElementById('week');week.innerHTML='';
- const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
- ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((name,i)=>{const dt=new Date(monday);dt.setDate(monday.getDate()+i);const k=keyDate(dt);const active=store[k]&&Object.values(store[k].checks||{}).some(Boolean);const el=document.createElement('div');el.className='day'+(k===todayKey?' today':'');el.innerHTML=`${name}<b>${dt.getDate()}${active?' ✓':''}</b>`;week.appendChild(el)});
+
+ document.getElementById('totalDays').textContent=
+  Object.values(store).filter(x=>x&&Object.values(x.checks||{}).some(Boolean)).length;
+
+ const week=document.getElementById('week');
+ week.innerHTML='';
+
+ const monday=new Date(today);
+ monday.setDate(today.getDate()-((today.getDay()+6)%7));
+
+ ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((name,i)=>{
+  const dt=new Date(monday);
+  dt.setDate(monday.getDate()+i);
+  const k=keyDate(dt);
+  const active=store[k]&&Object.values(store[k].checks||{}).some(Boolean);
+
+  const el=document.createElement('div');
+  el.className='day'+(k===todayKey?' today':'');
+  el.innerHTML=`${name}<b>${dt.getDate()}${active?' ✓':''}</b>`;
+  week.appendChild(el);
+ });
 }
 
-checks.forEach(c=>c.addEventListener('change',async()=>{
- dayData().checks[c.dataset.id]=c.checked;
- localSave();render();
- toast.textContent=currentUser?'Saving to your account…':'Saved on this device. Sign in to sync across devices.';
- if(await cloudSave())toast.textContent='Progress saved to your account.'
-}));
+habitsEl.addEventListener('change',async e=>{ habitsEl.addEventListener('click',async e=>{
+ const btn=e.target.closest('button[data-action]');
+ if(!btn)return;
+
+ e.preventDefault();
+ e.stopPropagation();
+
+ const id=btn.dataset.id;
+ const action=btn.dataset.action;
+ const goal=goals.find(g=>String(g.id)===String(id));
+
+ if(!goal)return;
+
+ if(action==='edit'){
+  openGoalModal(goal);
+ }
+
+ if(action==='delete'){
+  if(!confirm('Are you sure you want to delete this goal?'))return;
+
+  const {error}=await supabase
+   .from('user_goals')
+   .delete()
+   .eq('id',id);
+
+  if(error){
+   toast.textContent='Delete failed: '+error.message;
+   return;
+  }
+
+  goals=goals.filter(g=>String(g.id)!==String(id));
+  render();
+  toast.textContent='Goal deleted successfully!';
+ }
+});
+ if(!e.target.matches('.check'))return;
+
+ const id=e.target.dataset.id;
+ dayData().checks[id]=e.target.checked;
+
+ localSave();
+ render();
+
+ toast.textContent='Saving progress…';
+
+ if(await cloudSave()){
+  toast.textContent='Progress saved to your account.';
+ }
+});
+
+
+habitsEl.addEventListener('change',async e=>{
+ if(!e.target.matches('.check'))return;
+
+ const id=e.target.dataset.id;
+ dayData().checks[id]=e.target.checked;
+
+ localSave();
+ render();
+
+ toast.textContent='Saving progress…';
+
+ if(await cloudSave()){
+  toast.textContent='Progress saved to your account.';
+ }
+});
 
 document.getElementById('saveNote').addEventListener('click',async()=>{
  dayData().note=document.getElementById('journal').value;
@@ -224,7 +379,10 @@ document.getElementById('signInBtn').addEventListener('click',async()=>{
  if(currentUser){
   const {error}=await supabase.auth.signOut();
   if(error){toast.textContent=error.message;return}
-  currentUser=null;store={};localSave();
+currentUser=null;
+store={};
+goals=[];
+localSave();
   document.getElementById('journal').value='';
   render();updateAuthButtons();toast.textContent='Signed out.'
  }else openAuth('signin')
@@ -260,16 +418,117 @@ document.getElementById('authForm').addEventListener('submit',async e=>{
  }
 });
 
+
 async function loadCloudData(){
  if(!currentUser)return;
+
+ const {data:logs,error:logsError}=await supabase
+  .from('daily_logs')
+  .select('log_date,checks,note');
+
+ if(logsError){
+  toast.textContent='Could not load cloud data: '+logsError.message;
+  return;
+ }
+
+ const {data:goalsData,error:goalsError}=await supabase
+  .from('user_goals')
+  .select('id,title,icon,schedule')
+  .order('created_at',{ascending:true});
+
+ if(goalsError){
+  toast.textContent='Could not load goals: '+goalsError.message;
+  return;
+ }
+
  store={};
- const {data,error}=await supabase.from('daily_logs').select('log_date,checks,note');
- if(error){toast.textContent='Could not load cloud data: '+error.message;return}
- (data||[]).forEach(row=>{store[row.log_date]={checks:row.checks||{},note:row.note||''}});
+
+ (logs||[]).forEach(row=>{
+  store[row.log_date]={
+   checks:row.checks||{},
+   note:row.note||''
+  };
+ });
+
+ goals=goalsData||[];
+
  localSave();
+
  document.getElementById('journal').value=dayData().note||'';
+
  render();
 }
+
+
+const goalModal=document.getElementById('goalModal');
+
+function openGoalModal(goal=null){
+ if(!currentUser){
+  toast.textContent='Please sign in first to create goals.';
+  openAuth('signin');
+  return;
+ }
+
+ editingGoalId=goal?goal.id:null;
+
+ document.getElementById('goalModalTitle').textContent=
+  goal?'Edit goal':'Create a goal';
+
+ document.getElementById('goalTitle').value=goal?goal.title:'';
+ document.getElementById('goalIcon').value=goal?goal.icon:'🎯';
+ document.getElementById('goalSchedule').value=goal?goal.schedule:'Daily';
+
+ goalModal.classList.add('open');
+}
+
+document.getElementById('addGoalBtn').addEventListener('click',()=>{
+ openGoalModal();
+});
+
+document.getElementById('cancelGoalBtn').addEventListener('click',()=>{
+ goalModal.classList.remove('open');
+});
+
+document.getElementById('saveGoalBtn').addEventListener('click',async()=>{
+ const title=document.getElementById('goalTitle').value.trim();
+ const icon=document.getElementById('goalIcon').value.trim()||'🎯';
+ const schedule=document.getElementById('goalSchedule').value;
+
+ if(!title){
+  toast.textContent='Please enter a goal name.';
+  return;
+ }
+
+ const button=document.getElementById('saveGoalBtn');
+ button.disabled=true;
+ button.textContent='Saving…';
+
+ try{
+  let result;
+
+  if(editingGoalId){
+   result=await supabase.from('user_goals')
+    .update({title,icon,schedule})
+    .eq('id',editingGoalId);
+  }else{
+   result=await supabase.from('user_goals')
+    .insert({user_id:currentUser.id,title,icon,schedule});
+  }
+
+  if(result.error)throw result.error;
+
+  await loadCloudData();
+  goalModal.classList.remove('open');
+  toast.textContent=editingGoalId?'Goal updated!':'Goal added successfully!';
+  editingGoalId=null;
+
+ }catch(error){
+  toast.textContent='Error: '+error.message;
+ }finally{
+  button.disabled=false;
+  button.textContent='Save Goal';
+ }
+});
 
 function updateAuthButtons(){
  document.getElementById('signInBtn').textContent=currentUser?'Sign out':'Sign in';
