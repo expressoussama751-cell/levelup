@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LevelUp</title>
+<style>
+:root {
+  --site-primary: #245c4b;
+  --site-on-primary: #ffffff;
+  --site-secondary: #e6eee9;
+  --site-on-secondary: #183d32;
+  --site-background: #f4f7f4;
+  --site-on-background: #17231e;
+  --site-font-body: Inter, ui-sans-serif, system-ui, sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  color-scheme: light dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--site-font-body); background: var(--site-background); color: var(--site-on-background); }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); padding: 28px 18px 48px; }
+.shell { max-width: 1040px; margin: 0 auto; }
+header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:28px; }
+.brand { display:flex; align-items:center; gap:12px; }
+.logo { width:44px; height:44px; display:grid; place-items:center; border-radius:15px; color:var(--site-on-primary); background:var(--site-primary); font-size:22px; }
+h1 { font-family:var(--site-font-heading); font-size:calc(28px * var(--site-heading-scale)); line-height:1.1; margin:0; letter-spacing:-.8px; }
+.sub { color: #78867f; font-size:13px; margin-top:5px; }
+.date-pill { border:1px solid #dce5df; background:light-dark(#fff,#202b26); color:inherit; padding:10px 14px; border-radius:999px; font-size:13px; }
+.hero { background:var(--site-primary); color:var(--site-on-primary); border-radius:calc(24px * var(--site-radius-scale)); padding:26px; display:grid; grid-template-columns:1.2fr .8fr; gap:20px; align-items:center; margin-bottom:20px; }
+.eyebrow { opacity:.76; text-transform:uppercase; letter-spacing:1.5px; font-size:11px; font-weight:700; }
+.hero h2 { font-size:calc(27px * var(--site-heading-scale)); line-height:1.15; margin:9px 0 8px; letter-spacing:-.7px; }
+.hero p { margin:0; opacity:.8; font-size:14px; line-height:1.5; }
+.progress-wrap { display:flex; align-items:center; justify-content:center; gap:16px; }
+.ring { width:112px; height:112px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(#bce5ca var(--progress,0%),rgba(255,255,255,.2) 0); position:relative; }
+.ring:before { content:""; position:absolute; inset:9px; border-radius:50%; background:var(--site-primary); }
+.ring strong { position:relative; font-size:25px; }
+.progress-copy { font-size:13px; line-height:1.5; opacity:.86; max-width:100px; }
+.grid { display:grid; grid-template-columns:1.25fr .75fr; gap:20px; }
+.panel { background:light-dark(#fff,#1d2823); border:1px solid light-dark(#e2e9e4,#33423a); border-radius:calc(20px * var(--site-radius-scale)); padding:22px; }
+.panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:17px; }
+h3 { font-size:17px; margin:0; letter-spacing:-.3px; }
+.muted { color:#829087; font-size:12px; }
+.habits { display:grid; gap:10px; }
+.habit { display:flex; align-items:center; gap:13px; padding:13px; border:1px solid light-dark(#e8eee9,#33423a); border-radius:15px; }
+.habit-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:var(--site-secondary); color:var(--site-on-secondary); font-size:20px; flex:none; }
+.habit-info { flex:1; min-width:0; }
+.habit-info strong { display:block; font-size:14px; }
+.habit-info span { color:#829087; font-size:12px; display:block; margin-top:3px; }
+.check { width:25px; height:25px; accent-color:var(--site-primary); cursor:pointer; }
+.week { display:grid; grid-template-columns:repeat(7,1fr); gap:7px; margin-top:8px; }
+.day { text-align:center; font-size:11px; color:#829087; }
+.day b { display:grid; place-items:center; width:34px; height:34px; border-radius:11px; margin:7px auto 0; background:light-dark(#f0f4f1,#29362f); color:inherit; font-size:12px; }
+.day.today b { background:var(--site-primary); color:white; }
+.journal { width:100%; min-height:112px; resize:vertical; border:1px solid light-dark(#dfe8e1,#3a4a40); border-radius:13px; padding:12px; font:inherit; font-size:13px; background:light-dark(#fbfdfb,#18211d); color:inherit; outline-color:var(--site-primary); }
+.actions { display:flex; gap:9px; flex-wrap:wrap; margin-top:12px; }
+button { border:0; cursor:pointer; border-radius:12px; padding:10px 14px; font:inherit; font-size:12px; font-weight:700; }
+.primary { background:var(--site-primary); color:white; }
+.secondary { background:var(--site-secondary); color:var(--site-on-secondary); }
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.stat { background:light-dark(#f4f7f4,#26322c); padding:14px; border-radius:14px; }
+.stat strong { font-size:22px; display:block; }
+.stat span { color:#829087; font-size:11px; }
+footer { text-align:center; color:#87948c; font-size:11px; margin-top:22px; }
+.toast { min-height:18px; color:var(--site-primary); font-size:12px; margin-top:8px; }
+.header-actions { display:flex; align-items:center; gap:8px; }
+.auth-btn { border:1px solid #dce5df; background:transparent; color:inherit; }
+.auth-btn.primary { background:var(--site-primary); color:#fff; border-color:var(--site-primary); }
+.modal-backdrop { position:fixed; inset:0; z-index:10; display:none; place-items:center; padding:18px; background:rgba(10,20,15,.55); }
+.modal-backdrop.open { display:grid; }
+.auth-card { width:min(100%,420px); background:light-dark(#fff,#1d2823); color:inherit; border:1px solid light-dark(#e2e9e4,#33423a); border-radius:22px; padding:24px; box-shadow:0 20px 70px rgba(0,0,0,.2); }
+.auth-card h2 { margin:0 0 7px; font-size:23px; }
+.auth-card p { color:#829087; font-size:13px; line-height:1.5; margin:0 0 18px; }
+.auth-card label { display:block; font-size:12px; font-weight:700; margin:13px 0 6px; }
+.auth-card input { width:100%; border:1px solid light-dark(#dfe8e1,#3a4a40); border-radius:11px; padding:12px; background:light-dark(#fbfdfb,#18211d); color:inherit; font:inherit; }
+.auth-card .actions button { flex:1; }
+.auth-note { font-size:11px; color:#829087; margin-top:13px; line-height:1.5; }
+@media (max-width:720px) { #app{padding:20px 13px 36px}.hero{grid-template-columns:1fr}.progress-wrap{justify-content:flex-start}.grid{grid-template-columns:1fr}.date-pill{display:none}.panel{padding:17px} }
+@media (prefers-color-scheme:dark) {
+  .sub,.muted,.habit-info span,.day,.stat span,footer { color:#a0afa6; }
+  .habit-icon { background:#2d4238; color:#d8eee1; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+ <div class="shell">
+  <header>
+   <div class="brand"><div class="logo">✦</div><div><h1>LevelUp</h1><div class="sub">Build better habits, one day at a time.</div></div></div>
+   <div class="header-actions"><div class="date-pill" id="todayLabel">Today</div><button class="auth-btn" id="signInBtn">Sign in</button><button class="auth-btn primary" id="createAccountBtn">Create account</button></div>
+  </header>
+  <section class="hero">
+   <div><div class="eyebrow">Your personal progress</div><h2>Show up for yourself today.</h2><p>Consistency beats motivation. Tick off each habit as you complete it.</p></div>
+   <div class="progress-wrap"><div class="ring" id="ring"><strong id="percent">0%</strong></div><div class="progress-copy"><b id="completedText">0 of 4</b><br>habits completed today</div></div>
+  </section>
+  <div class="grid">
+   <section class="panel">
+    <div class="panel-head"><div><h3>Today's habits</h3><div class="muted">Your daily check-in</div></div><span class="muted" id="dateShort"></span></div>
+    <div class="habits" id="habits">
+     <label class="habit"><span class="habit-icon">🇬🇧</span><span class="habit-info"><strong>English</strong><span>30 minutes · Daily</span></span><input class="check" type="checkbox" data-id="english"></label>
+     <label class="habit"><span class="habit-icon">📈</span><span class="habit-info"><strong>Trading study</strong><span>45 minutes · Daily</span></span><input class="check" type="checkbox" data-id="trading"></label>
+     <label class="habit"><span class="habit-icon">🏃</span><span class="habit-info"><strong>Running</strong><span>3 times per week</span></span><input class="check" type="checkbox" data-id="running"></label>
+     <label class="habit"><span class="habit-icon">💪</span><span class="habit-info"><strong>Pompes</strong><span>2 times per week</span></span><input class="check" type="checkbox" data-id="pompes"></label>
+    </div>
+    <div class="toast" id="toast" aria-live="polite"></div>
+    <div class="panel-head" style="margin-top:24px;margin-bottom:8px"><h3>Weekly overview</h3><span class="muted">This week</span></div>
+    <div class="week" id="week"></div>
+   </section>
+   <section class="panel">
+    <div class="panel-head"><div><h3>Daily journal</h3><div class="muted">A thought from today</div></div><span>✍️</span></div>
+    <textarea class="journal" id="journal" placeholder="What went well today? What can I improve tomorrow?"></textarea>
+    <div class="actions"><button class="primary" id="saveNote">Save note</button><button class="secondary" id="clearDay">Clear today's checks</button></div>
+    <div class="stats">
+     <div class="stat"><strong id="totalDone">0</strong><span>Habits checked today</span></div>
+     <div class="stat"><strong id="totalDays">0</strong><span>Active days tracked</span></div>
+    </div>
+    <p class="muted" style="line-height:1.6;margin-top:17px">Tip: start small. A completed 20-minute run is better than a perfect plan you never start.</p>
+   </section>
+  </div>
+  <footer>Your personal space · Your progress syncs securely when you sign in.</footer>
+ </div>
+</div>
+<div class="modal-backdrop" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+ <section class="auth-card">
+  <div class="panel-head"><span class="logo">✦</span><button class="secondary" id="closeAuth" type="button">Close</button></div>
+  <h2 id="authTitle">Create your account</h2>
+  <p id="authDescription">Your own space for goals, habits and progress.</p>
+  <form id="authForm">
+   <label for="authEmail">Email address</label><input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+   <label for="authPassword">Password</label><input id="authPassword" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required>
+   <div class="actions"><button class="primary" id="authSubmit" type="submit">Create account</button></div>
+  </form>
+  <div class="auth-note" id="authNote">Your account and progress are stored securely. Never share your password.</div>
+ </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://chjskcvalgntdlfyhprj.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoanNrY3ZhbGdudGRsZnlocHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MzY4NjksImV4cCI6MjEwOTExMjg2OX0.r2zIAYrc5ZgfPyWFDaf81tgmG6SAgam4Brta1evLoR0';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const KEY='levelup-v1';
+const today=new Date();
+const keyDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayKey=keyDate(today);
+let store={};
+try{store=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){store={}}
+let currentUser=null;
+const dayData=()=>store[todayKey]||(store[todayKey]={checks:{},note:''});
+const checks=[...document.querySelectorAll('.check')];
+const toast=document.getElementById('toast');
+
+document.getElementById('todayLabel').textContent=today.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+document.getElementById('dateShort').textContent=today.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+document.getElementById('journal').value=dayData().note||'';
+
+function localSave(){localStorage.setItem(KEY,JSON.stringify(store))}
+
+async function cloudSave(date=todayKey){
+ if(!currentUser)return;
+ const d=store[date]||{checks:{},note:''};
+ const {error}=await supabase.from('daily_logs').upsert({user_id:currentUser.id,log_date:date,checks:d.checks||{},note:d.note||''},{onConflict:'user_id,log_date'});
+ if(error){toast.textContent='Cloud save failed: '+error.message;return false}
+ return true;
+}
+
+function render(){
+ const d=dayData();let n=0;
+ checks.forEach(c=>{c.checked=!!d.checks[c.dataset.id];if(c.checked)n++});
+ const pct=Math.round(n/checks.length*100);
+ document.getElementById('percent').textContent=pct+'%';
+ document.getElementById('completedText').textContent=n+' of '+checks.length;
+ document.getElementById('ring').style.setProperty('--progress',pct+'%');
+ document.getElementById('totalDone').textContent=n;
+ document.getElementById('totalDays').textContent=Object.values(store).filter(x=>x&&Object.values(x.checks||{}).some(Boolean)).length;
+ const week=document.getElementById('week');week.innerHTML='';
+ const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
+ ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((name,i)=>{const dt=new Date(monday);dt.setDate(monday.getDate()+i);const k=keyDate(dt);const active=store[k]&&Object.values(store[k].checks||{}).some(Boolean);const el=document.createElement('div');el.className='day'+(k===todayKey?' today':'');el.innerHTML=`${name}<b>${dt.getDate()}${active?' ✓':''}</b>`;week.appendChild(el)});
+}
+
+checks.forEach(c=>c.addEventListener('change',async()=>{
+ dayData().checks[c.dataset.id]=c.checked;
+ localSave();render();
+ toast.textContent=currentUser?'Saving to your account…':'Saved on this device. Sign in to sync across devices.';
+ if(await cloudSave())toast.textContent='Progress saved to your account.'
+}));
+
+document.getElementById('saveNote').addEventListener('click',async()=>{
+ dayData().note=document.getElementById('journal').value;
+ localSave();
+ toast.textContent=currentUser?'Saving note…':'Note saved on this device. Sign in to sync across devices.';
+ if(await cloudSave())toast.textContent='Note saved to your account.'
+});
+
+document.getElementById('clearDay').addEventListener('click',async()=>{
+ if(confirm("Clear today's habit check-ins?")){
+  dayData().checks={};localSave();render();
+  toast.textContent='Today’s check-ins cleared.';
+  if(await cloudSave())toast.textContent='Today’s check-ins cleared and synced.'
+ }
+});
+
+render();
+
+const authModal=document.getElementById('authModal');
+let authMode='signup';
+
+function openAuth(mode){
+ authMode=mode;
+ document.getElementById('authTitle').textContent=mode==='signup'?'Create your account':'Welcome back';
+ document.getElementById('authDescription').textContent=mode==='signup'?'Your own space for goals, habits and progress.':'Sign in to access your saved habits and journal.';
+ document.getElementById('authSubmit').textContent=mode==='signup'?'Create account':'Sign in';
+ document.getElementById('authPassword').autocomplete=mode==='signup'?'new-password':'current-password';
+ document.getElementById('authNote').textContent='Your account and progress are stored securely. Never share your password.';
+ authModal.classList.add('open')
+}
+
+document.getElementById('createAccountBtn').addEventListener('click',()=>openAuth('signup'));
+
+document.getElementById('signInBtn').addEventListener('click',async()=>{
+ if(currentUser){
+  const {error}=await supabase.auth.signOut();
+  if(error){toast.textContent=error.message;return}
+  currentUser=null;store={};localSave();
+  document.getElementById('journal').value='';
+  render();updateAuthButtons();toast.textContent='Signed out.'
+ }else openAuth('signin')
+});
+
+document.getElementById('closeAuth').addEventListener('click',()=>authModal.classList.remove('open'));
+authModal.addEventListener('click',e=>{if(e.target===authModal)authModal.classList.remove('open')});
+
+document.getElementById('authForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const email=document.getElementById('authEmail').value.trim();
+ const password=document.getElementById('authPassword').value;
+ const submit=document.getElementById('authSubmit');
+ const note=document.getElementById('authNote');
+ submit.disabled=true;submit.textContent='Please wait…';
+ try{
+  const result=authMode==='signup'?await supabase.auth.signUp({email,password}):await supabase.auth.signInWithPassword({email,password});
+  if(result.error)throw result.error;
+  if(authMode==='signup'&&!result.data.session){
+   note.textContent='Account created. Check your email to confirm your address, then sign in.';
+   return
+  }
+  currentUser=result.data.user;
+  await loadCloudData();
+  authModal.classList.remove('open');
+  toast.textContent='Signed in. Your progress is synced securely.';
+  updateAuthButtons();
+ }catch(err){
+  note.textContent=err.message||'Something went wrong. Please try again.'
+ }finally{
+  submit.disabled=false;
+  submit.textContent=authMode==='signup'?'Create account':'Sign in'
+ }
+});
+
+async function loadCloudData(){
+ if(!currentUser)return;
+ store={};
+ const {data,error}=await supabase.from('daily_logs').select('log_date,checks,note');
+ if(error){toast.textContent='Could not load cloud data: '+error.message;return}
+ (data||[]).forEach(row=>{store[row.log_date]={checks:row.checks||{},note:row.note||''}});
+ localSave();
+ document.getElementById('journal').value=dayData().note||'';
+ render();
+}
+
+function updateAuthButtons(){
+ document.getElementById('signInBtn').textContent=currentUser?'Sign out':'Sign in';
+ document.getElementById('createAccountBtn').style.display=currentUser?'none':'';
+}
+
+supabase.auth.getSession().then(async({data})=>{
+ if(data.session){
+  currentUser=data.session.user;
+  await loadCloudData();
+  updateAuthButtons()
+ }
+});
+</script>
+</body>
+</html>
